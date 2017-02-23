@@ -43,6 +43,10 @@ config_h.set('HAVE_STRINGS_H', cc.has_header('strings.h'))
 configure_file(output: 'config.h', configuration: config_h)
 config_h_include = include_directories('.')
 
+if target_machine.system() == 'windows'
+  add_project_arguments('-DWIN32', language: 'c')
+endif
+
 
 global_cflags = []
 test_cflags = [
