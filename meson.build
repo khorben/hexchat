@@ -84,5 +84,10 @@ add_project_link_arguments(global_ldflags, language: 'c')
 
 
 subdir('src')
-subdir('plugins')
-subdir('po')
+if get_option('with-plugin')
+  subdir('plugins')
+endif
+# FIXME: build xgettext
+if target_machine.system() != 'windows'
+  subdir('po')
+endif

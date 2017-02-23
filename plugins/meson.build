@@ -1,7 +1,7 @@
 plugindir = join_paths(get_option('libdir'), 'hexchat/plugins')
 
 if target_machine.system() == 'windows'
-  if get_option('with-exec') and
+  if get_option('with-exec')
     subdir('exec')
   endif
 
