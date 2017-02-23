@@ -84,4 +84,5 @@ add_project_link_arguments(global_ldflags, language: 'c')
 
 
 subdir('src')
+subdir('plugins')
 subdir('po')
