@@ -11,6 +11,7 @@ cc = meson.get_compiler('c')
 
 
 libgio_dep = dependency('gio-2.0', version: '>= 2.34.0')
+libgmodule_dep = dependency('gmodule-2.0')
 libssl_dep = dependency('openssl', version: '>= 0.9.8',
                         required: get_option('with-ssl'))
 
@@ -43,7 +44,7 @@ config_h.set('HAVE_STRINGS_H', cc.has_header('strings.h'))
 configure_file(output: 'config.h', configuration: config_h)
 config_h_include = include_directories('.')
 
-if target_machine.system() == 'windows'
+if host_machine.system() == 'windows'
   add_project_arguments('-DWIN32', language: 'c')
 endif
 
@@ -52,7 +53,6 @@ global_cflags = []
 test_cflags = [
   '-pipe',
   '-funsigned-char',
-  '-fstack-protector-strong',
   '-Wno-conversion',
   '-Wno-pointer-sign',
   '-Wno-padded',
@@ -67,6 +67,9 @@ test_cflags = [
   '-Werror=missing-include-dirs',
   '-Werror=date-time',
 ]
+if host_machine.system() != 'windows' and get_option('buildtype') != 'plain'
+  test_cflags += '-fstack-protector-strong'
+endif
 foreach cflag : test_cflags
   if cc.has_argument(cflag)
     global_cflags += cflag
@@ -74,24 +77,25 @@ foreach cflag : test_cflags
 endforeach
 add_project_arguments(global_cflags, language: 'c')
 
-global_ldflags = []
-test_ldflags = [
-  '-Wl,-z,relro',
-  '-Wl,-z,now',
-]
-foreach ldflag : test_ldflags
-  if cc.has_argument(ldflag)
-    global_ldflags += ldflag
-  endif
-endforeach
-add_project_link_arguments(global_ldflags, language: 'c')
-
+if host_machine.system() != 'windows'
+  global_ldflags = []
+  test_ldflags = [
+    '-Wl,-z,relro',
+    '-Wl,-z,now',
+  ]
+  foreach ldflag : test_ldflags
+    if cc.has_argument(ldflag)
+      global_ldflags += ldflag
+    endif
+  endforeach
+  add_project_link_arguments(global_ldflags, language: 'c')
+endif
 
 subdir('src')
 if get_option('with-plugin')
   subdir('plugins')
 endif
 # FIXME: build xgettext
-if target_machine.system() != 'windows'
+if host_machine.system() != 'windows'
   subdir('po')
 endif

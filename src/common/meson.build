@@ -37,6 +37,17 @@ common_cflags = [
   '-DHAVE_CONFIG_H',
 ]
 
+if host_machine.system() == 'windows'
+  common_deps += [
+    cc.find_library('ws2_32'), # winsock
+    cc.find_library('winmm'), # playsound
+    cc.find_library('wbemuuid'), # sysinfo
+  ]
+
+  common_sources += 'sysinfo/win32/backend.c'
+  common_includes += include_directories('sysinfo')
+endif
+
 marshal = gnome.genmarshal('marshal',
   sources: 'marshalers.list',
   prefix: '_hexchat_marshal',
@@ -78,7 +89,7 @@ if get_option('with-dbus')
 endif
 
 if get_option('with-plugin')
-  common_deps += dependency('gmodule-2.0')
+  common_deps += libgmodule_dep
   common_cflags += '-DHEXCHATLIBDIR="@0@"'.format(join_paths(get_option('prefix'),
                                                   get_option('libdir'),
                                                   'hexchat/plugins'))

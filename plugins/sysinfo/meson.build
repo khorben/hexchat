@@ -10,7 +10,7 @@ sysinfo_deps = [
 
 sysinfo_includes = []
 
-system = target_machine.system()
+system = host_machine.system()
 if system == 'linux' or system == 'darwin'
   sysinfo_includes += 'shared'
   sysinfo_sources += [

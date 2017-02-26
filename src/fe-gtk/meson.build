@@ -30,6 +30,7 @@ hexchat_gtk_sources = [
 
 hexchat_gtk_deps = [
   hexchat_common_dep,
+  libgmodule_dep, # used by libsexy
   dependency('gtk+-2.0', version: '>= 2.24.0')
 ]
 
