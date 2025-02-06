@@ -13,7 +13,7 @@ sysinfo_includes = []
 sysinfo_cargs = []
 
 system = host_machine.system()
-if system == 'linux' or system == 'gnu' or system.startswith('gnu/') or system == 'darwin' or system == 'freebsd'
+if system == 'linux' or system == 'gnu' or system.startswith('gnu/') or system == 'darwin' or system == 'freebsd' or system == 'netbsd'
   sysinfo_includes += 'shared'
   sysinfo_sources += [
     'shared/df.c'
