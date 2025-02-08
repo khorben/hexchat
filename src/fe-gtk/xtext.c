@@ -668,7 +668,7 @@ gtk_xtext_unrealize (GtkWidget * widget)
 	backend_deinit (GTK_XTEXT (widget));
 
 	/* if there are still events in the queue, this'll avoid segfault */
-	gdk_window_set_user_data (widget->window, NULL);
+	gdk_window_set_user_data (gtk_widget_get_window(widget), NULL);
 
 	if (parent_class->unrealize)
 		(* GTK_WIDGET_CLASS (parent_class)->unrealize) (widget);
@@ -702,28 +702,28 @@ gtk_xtext_realize (GtkWidget * widget)
 	attributes.colormap = cmap;
 	attributes.visual = gtk_widget_get_visual (widget);
 
-	widget->window = gdk_window_new (widget->parent->window, &attributes,
+	gtk_widget_set_window (widget, gdk_window_new (gtk_widget_get_parent_window (widget), &attributes,
 												GDK_WA_X | GDK_WA_Y | GDK_WA_VISUAL |
-												GDK_WA_COLORMAP);
+												GDK_WA_COLORMAP));
 
-	gdk_window_set_user_data (widget->window, widget);
+	gdk_window_set_user_data (gtk_widget_get_window(widget), widget);
 
-	xtext->depth = gdk_window_get_visual (widget->window)->depth;
+	xtext->depth = gdk_window_get_visual (gtk_widget_get_window(widget))->depth;
 
 	val.subwindow_mode = GDK_INCLUDE_INFERIORS;
 	val.graphics_exposures = 0;
 
-	xtext->bgc = gdk_gc_new_with_values (widget->window, &val,
+	xtext->bgc = gdk_gc_new_with_values (gtk_widget_get_window(widget), &val,
 													 GDK_GC_EXPOSURES | GDK_GC_SUBWINDOW);
-	xtext->fgc = gdk_gc_new_with_values (widget->window, &val,
+	xtext->fgc = gdk_gc_new_with_values (gtk_widget_get_window(widget), &val,
 													 GDK_GC_EXPOSURES | GDK_GC_SUBWINDOW);
-	xtext->light_gc = gdk_gc_new_with_values (widget->window, &val,
+	xtext->light_gc = gdk_gc_new_with_values (gtk_widget_get_window(widget), &val,
 											GDK_GC_EXPOSURES | GDK_GC_SUBWINDOW);
-	xtext->dark_gc = gdk_gc_new_with_values (widget->window, &val,
+	xtext->dark_gc = gdk_gc_new_with_values (gtk_widget_get_window(widget), &val,
 											GDK_GC_EXPOSURES | GDK_GC_SUBWINDOW);
-	xtext->thin_gc = gdk_gc_new_with_values (widget->window, &val,
+	xtext->thin_gc = gdk_gc_new_with_values (gtk_widget_get_window(widget), &val,
 											GDK_GC_EXPOSURES | GDK_GC_SUBWINDOW);
-	xtext->marker_gc = gdk_gc_new_with_values (widget->window, &val,
+	xtext->marker_gc = gdk_gc_new_with_values (gtk_widget_get_window(widget), &val,
 											GDK_GC_EXPOSURES | GDK_GC_SUBWINDOW);
 
 	/* for the separator bar (light) */
@@ -749,7 +749,7 @@ gtk_xtext_realize (GtkWidget * widget)
 	xtext_set_fg (xtext, xtext->bgc, XTEXT_BG);
 
 	/* draw directly to window */
-	xtext->draw_buf = widget->window;
+	xtext->draw_buf = gtk_widget_get_window(widget);
 
 	if (xtext->pixmap)
 	{
@@ -759,11 +759,11 @@ gtk_xtext_realize (GtkWidget * widget)
 		gdk_gc_set_fill (xtext->bgc, GDK_TILED);
 	}
 
-	xtext->hand_cursor = gdk_cursor_new_for_display (gdk_window_get_display (widget->window), GDK_HAND1);
-	xtext->resize_cursor = gdk_cursor_new_for_display (gdk_window_get_display (widget->window), GDK_LEFT_SIDE);
+	xtext->hand_cursor = gdk_cursor_new_for_display (gdk_window_get_display (gtk_widget_get_window(widget)), GDK_HAND1);
+	xtext->resize_cursor = gdk_cursor_new_for_display (gdk_window_get_display (gtk_widget_get_window(widget)), GDK_LEFT_SIDE);
 
-	gdk_window_set_back_pixmap (widget->window, NULL, FALSE);
-	widget->style = gtk_style_attach (widget->style, widget->window);
+	gdk_window_set_back_pixmap (gtk_widget_get_window(widget), NULL, FALSE);
+	widget->style = gtk_style_attach (widget->style, gtk_widget_get_window(widget));
 
 	backend_init (xtext);
 }
@@ -790,7 +790,7 @@ gtk_xtext_size_allocate (GtkWidget * widget, GtkAllocation * allocation)
 		xtext->buffer->window_width = allocation->width;
 		xtext->buffer->window_height = allocation->height;
 
-		gdk_window_move_resize (widget->window, allocation->x, allocation->y,
+		gdk_window_move_resize (gtk_widget_get_window(widget), allocation->x, allocation->y,
 										allocation->width, allocation->height);
 		dontscroll (xtext->buffer);	/* force scrolling off */
 		if (!height_only)
@@ -1441,7 +1441,7 @@ gtk_xtext_scrolldown_timeout (GtkXText * xtext)
 	xtext_buffer *buf = xtext->buffer;
 	GtkAdjustment *adj = xtext->adj;
 
-	gdk_window_get_pointer (GTK_WIDGET(xtext)->window, 0, &p_y, 0);
+	gdk_window_get_pointer (gtk_widget_get_window (GTK_WIDGET(xtext)), 0, &p_y, 0);
 	win_height = gdk_window_get_height (gtk_widget_get_window (GTK_WIDGET(xtext)));
 
 	if (buf->last_ent_end == NULL ||	/* If context has changed OR */
@@ -1474,7 +1474,7 @@ gtk_xtext_scrollup_timeout (GtkXText * xtext)
 	GtkAdjustment *adj = xtext->adj;
 	int delta_y;
 
-	gdk_window_get_pointer (GTK_WIDGET(xtext)->window, 0, &p_y, 0);
+	gdk_window_get_pointer (gtk_widget_get_window (GTK_WIDGET(xtext)), 0, &p_y, 0);
 
 	if (buf->last_ent_start == NULL ||	/* If context has changed OR */
 		 buf->pagetop_ent == NULL ||		/* pagetop_ent is reset OR */
@@ -1641,7 +1641,7 @@ gtk_xtext_leave_notify (GtkWidget * widget, GdkEventCrossing * event)
 		xtext->hilight_start = -1;
 		xtext->hilight_end = -1;
 		xtext->cursor_hand = FALSE;
-		gdk_window_set_cursor (widget->window, 0);
+		gdk_window_set_cursor (gtk_widget_get_window(widget), 0);
 		xtext->hilight_ent = NULL;
 	}
 
@@ -1651,7 +1651,7 @@ gtk_xtext_leave_notify (GtkWidget * widget, GdkEventCrossing * event)
 		xtext->hilight_start = -1;
 		xtext->hilight_end = -1;
 		xtext->cursor_resize = FALSE;
-		gdk_window_set_cursor (widget->window, 0);
+		gdk_window_set_cursor (gtk_widget_get_window(widget), 0);
 		xtext->hilight_ent = NULL;
 	}
 
@@ -1742,7 +1742,7 @@ gtk_xtext_motion_notify (GtkWidget * widget, GdkEventMotion * event)
 	textentry *word_ent;
 	int word_type;
 
-	gdk_window_get_pointer (widget->window, &x, &y, &mask);
+	gdk_window_get_pointer (gtk_widget_get_window(widget), &x, &y, &mask);
 
 	if (xtext->moving_separator)
 	{
@@ -1772,7 +1772,7 @@ gtk_xtext_motion_notify (GtkWidget * widget, GdkEventMotion * event)
 	{
 		redraw = gtk_xtext_check_mark_stamp (xtext, mask);
 		gtk_grab_add (widget);
-		/*gdk_pointer_grab (widget->window, TRUE,
+		/*gdk_pointer_grab (gtk_widget_get_window(widget), TRUE,
 									GDK_BUTTON_RELEASE_MASK |
 									GDK_BUTTON_MOTION_MASK, NULL, NULL, 0);*/
 		xtext->select_end_x = x;
@@ -1797,7 +1797,7 @@ gtk_xtext_motion_notify (GtkWidget * widget, GdkEventMotion * event)
 		{
 			if (!xtext->cursor_resize)
 			{
-				gdk_window_set_cursor (GTK_WIDGET(xtext)->window,
+				gdk_window_set_cursor (gtk_widget_get_window (GTK_WIDGET(xtext)),
 										  		xtext->resize_cursor);
 				xtext->cursor_hand = FALSE;
 				xtext->cursor_resize = TRUE;
@@ -1819,7 +1819,7 @@ gtk_xtext_motion_notify (GtkWidget * widget, GdkEventMotion * event)
 		{
 			if (!xtext->cursor_hand)
 			{
-				gdk_window_set_cursor (GTK_WIDGET(xtext)->window,
+				gdk_window_set_cursor (gtk_widget_get_window (GTK_WIDGET(xtext)),
 										  		xtext->hand_cursor);
 				xtext->cursor_hand = TRUE;
 				xtext->cursor_resize = FALSE;
@@ -1999,7 +1999,7 @@ gtk_xtext_button_press (GtkWidget * widget, GdkEventButton * event)
 	unsigned char *word;
 	int line_x, x, y, offset, len;
 
-	gdk_window_get_pointer (widget->window, &x, &y, &mask);
+	gdk_window_get_pointer (gtk_widget_get_window(widget), &x, &y, &mask);
 
 	if (event->button == 3 || event->button == 2) /* right/middle click */
 	{
@@ -2227,7 +2227,7 @@ gtk_xtext_selection_get (GtkWidget * widget,
 	case TARGET_COMPOUND_TEXT:
 #ifdef GDK_WINDOWING_X11
 		{
-			GdkDisplay *display = gdk_window_get_display (widget->window);
+			GdkDisplay *display = gdk_window_get_display (gtk_widget_get_window(widget));
 			GdkAtom encoding;
 			gint format;
 			gint new_length;
@@ -2620,7 +2620,7 @@ gtk_xtext_render_flush (GtkXText * xtext, int x, int y, unsigned char *str,
 		GdkRectangle dest;
 
 		gdk_gc_set_ts_origin (xtext->bgc, xtext->ts_x, xtext->ts_y);
-		xtext->draw_buf = GTK_WIDGET(xtext)->window;
+		xtext->draw_buf = gtk_widget_set_window (GTK_WIDGET(xtext));
 		clip.x = xtext->clip_x;
 		clip.y = xtext->clip_y;
 		clip.width = xtext->clip_x2 - xtext->clip_x;
@@ -3567,7 +3567,7 @@ gtk_xtext_set_background (GtkXText * xtext, GdkPixmap * pixmap)
 		g_object_unref (xtext->bgc);
 		val.subwindow_mode = GDK_INCLUDE_INFERIORS;
 		val.graphics_exposures = 0;
-		xtext->bgc = gdk_gc_new_with_values (GTK_WIDGET(xtext)->window,
+		xtext->bgc = gdk_gc_new_with_values (gtk_widget_get_window (GTK_WIDGET(xtext)),
 								&val, GDK_GC_EXPOSURES | GDK_GC_SUBWINDOW);
 		xtext_set_fg (xtext, xtext->bgc, XTEXT_BG);
 	}
@@ -3821,7 +3821,7 @@ gtk_xtext_render_page (GtkXText * xtext)
 	if (xtext->buffer->indent < MARGIN)
 		xtext->buffer->indent = MARGIN;	  /* 2 pixels is our left margin */
 
-	gdk_drawable_get_size (GTK_WIDGET(xtext)->window, &width, &height);
+	gdk_drawable_get_size (gtk_widget_get_window (GTK_WIDGET(xtext)), &width, &height);
 
 	if (width < 34 || height < xtext->fontsize || width < xtext->buffer->indent + 32)
 		return;
