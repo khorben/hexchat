@@ -561,7 +561,7 @@ gtk_xtext_new (GdkColor palette[], int separator)
 }
 
 static void
-gtk_xtext_destroy (GtkObject * object)
+gtk_xtext_destroy (GObject * object)
 {
 	GtkXText *xtext = GTK_XTEXT (object);
 
