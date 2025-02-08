@@ -559,13 +559,13 @@ mg_progressbar_update (GtkWidget *bar)
 		if (type == 0)
 		{
 			type = 1;
-			gtk_progress_bar_set_orientation ((GtkProgressBar *) bar,
-														 GTK_PROGRESS_RIGHT_TO_LEFT);
+			gtk_widget_set_direction (bar,
+														 GTK_TEXT_DIR_RTL);
 		} else
 		{
 			type = 0;
-			gtk_progress_bar_set_orientation ((GtkProgressBar *) bar,
-														 GTK_PROGRESS_LEFT_TO_RIGHT);
+			gtk_widget_set_direction (bar,
+														 GTK_TEXT_DIR_LTR);
 		}
 		pos = 0.05;
 	}
